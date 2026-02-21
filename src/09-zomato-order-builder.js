@@ -46,5 +46,70 @@
  *   // grandTotal: 1000 + 0 + 50 - 150 = 900
  */
 export function buildZomatoOrder(cart, coupon) {
-  // Your code here
+  // Step 1: Validate input
+  if (!Array.isArray(cart) || cart.length === 0) {
+    return null;
+  }
+  
+  // Step 2: Process items and calculate totals
+  const items = cart.filter(item => item.qty > 0).map(item => {
+    const basePrice = item.price;
+    const addonTotal = (item.addons || []).reduce((sum, addon) => {
+      const [addonName, addonPrice] = addon.split(":");
+      return sum + parseFloat(addonPrice);
+    }, 0);
+    
+    const itemTotal = (basePrice + addonTotal) * item.qty;
+    
+    return {
+      name: item.name,
+      qty: item.qty,
+      basePrice,
+      addonTotal,
+      itemTotal
+    };
+  });
+  
+  const subtotal = items.reduce((sum, item) => sum + item.itemTotal, 0);
+  
+  // Step 3: Calculate delivery fee
+  let deliveryFee = 0;    
+  if (subtotal < 500) {
+    deliveryFee = 30;
+  } else if (subtotal >= 500 && subtotal < 1000) {
+    deliveryFee = 15;
+  }
+  
+  // Step 4: Calculate GST
+  const gst = parseFloat((subtotal * 0.05).toFixed(2));
+  
+  // Step 5: Calculate discount based on coupon
+  let discount = 0;
+  
+  if (typeof coupon === 'string') {
+    const lowerCoupon = coupon.toLowerCase();
+    
+    if (lowerCoupon === "first50") {
+      discount = Math.min(subtotal * 0.5, 150);
+    } else if (lowerCoupon === "flat100") {
+      discount = 100;
+    } else if (lowerCoupon === "freeship") {
+      discount = deliveryFee; // Free delivery means discount equals original delivery fee
+    }
+  }
+
+  // Step 6: Calculate grand total
+  const grandTotal = Math.max(0, parseFloat((subtotal + deliveryFee + gst - discount).toFixed(2)));
+  
+  // Step 7: Return the order summary object
+  return {
+    items,
+    subtotal,
+    deliveryFee,
+    gst,
+    discount,
+    grandTotal
+  };  
+
+  
 }

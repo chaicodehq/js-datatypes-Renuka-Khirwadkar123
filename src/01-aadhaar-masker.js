@@ -28,5 +28,26 @@
  *   // => "INVALID"
  */
 export function maskAadhaar(aadhaarNumber) {
-  // Your code here
+  // Step 1: Validate input
+  if (typeof aadhaarNumber !== 'string') {
+    return "INVALID";
+  }
+  
+  if (aadhaarNumber.length !== 12) {
+    return "INVALID";
+  }
+  
+  if (!/^\d{12}$/.test(aadhaarNumber)) {
+    return "INVALID";
+  }
+  
+  // Step 2: Mask the first 8 digits
+  const maskedPart = "X".repeat(8);
+  
+  // Step 3: Get the last 4 digits
+  const lastFourDigits = aadhaarNumber.slice(-4);
+  
+  // Step 4: Combine and format with dashes
+  return `${maskedPart.slice(0,4)}-${maskedPart.slice(4)}-${lastFourDigits}`;
+  
 }
